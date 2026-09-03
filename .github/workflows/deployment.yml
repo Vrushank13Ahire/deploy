@@ -9,10 +9,13 @@ jobs:
       - uses: actions/checkout@v4
       - run: echo "Running the Tests"
 
-  build:
+  deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    environment: Production
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Deploying to production"
+      - name: Deploy
+        env:
+          TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: echo "Deploying to production"
