@@ -6,12 +6,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/check@v4
+      - uses: actions/checkout@v4
       - run: echo "Running the Tests"
 
   build:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/check@v4
+      - uses: actions/checkout@v4
       - run: echo "Deploying to production"
