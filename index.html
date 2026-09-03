@@ -2,403 +2,812 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Perihelion — A Digital Art Studio</title>
-<meta name="description" content="Perihelion is a small studio designing websites and digital experiences staged like light — for people who want to be remembered, not just found.">
+<title>GovBridge — Interactive Prototype</title>
+<style>
+:root{
+  --navy-950:#0E1B33; --navy-900:#16264A; --navy-800:#22355F; --navy-700:#2D4373;
+  --saffron:#F0862F; --saffron-dark:#D96F1C;
+  --green:#1E9D63; --green-bg:#E6F6EE;
+  --amber:#DE9B14; --amber-bg:#FBF1DC;
+  --blue-tag:#2C6ED5; --blue-tag-bg:#E9F1FC;
+  --violet-tag:#7A54D1; --violet-tag-bg:#F1ECFB;
+  --teal-tag:#0E9488; --teal-tag-bg:#E3F6F4;
+  --red:#C23B3B; --red-bg:#FBEAEA;
+  --bg:#F3F5F8; --card:#FFFFFF; --line:#E4E8EF;
+  --text:#212A3C; --text-mid:#5B6478; --text-dim:#8A93A6;
+  --radius:14px;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif;
+  background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased;
+  padding-top:46px;
+}
+h1,h2,h3,.display{font-family:Georgia,'Segoe UI',sans-serif;}
+.mono{font-family:'Courier New',monospace;}
+a{text-decoration:none; color:inherit;}
+button{font-family:inherit; border:none; background:none; cursor:pointer;}
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap" rel="stylesheet">
+/* ---- Role toggle ---- */
+.role-toggle-wrap{
+  position:fixed; top:0; left:0; right:0; height:46px; z-index:1000;
+  background:var(--navy-950); display:flex; align-items:center; justify-content:center; gap:3px;
+  box-shadow:0 6px 18px -8px rgba(14,27,51,0.5);
+}
+.role-btn{
+  padding:7px 16px; border-radius:20px; font-size:12px; font-weight:700; color:#9AA6C4; cursor:pointer;
+  display:flex; align-items:center; gap:7px; transition:all .15s ease;
+}
+.role-btn.active{background:var(--saffron); color:#fff;}
 
-<link rel="stylesheet" href="style.css">
+/* ---- App shells ---- */
+.app-role{display:none;}
+.app-role.visible{display:flex;}
+.shell{display:flex; width:100%; min-height:100vh; background:var(--bg);}
+
+.sidebar{
+  width:236px; background:var(--navy-950); color:#fff; flex-shrink:0;
+  padding:28px 18px; display:flex; flex-direction:column; gap:6px; min-height:100vh;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:0 6px 26px 6px; cursor:pointer;}
+.brand-mark{
+  width:34px; height:34px; border-radius:9px;
+  background:linear-gradient(135deg, var(--saffron), var(--green));
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; color:var(--navy-950); font-size:15px;
+}
+.brand-name{font-weight:700; font-size:17px; letter-spacing:0.2px;}
+.brand-tag{font-size:10px; color:#96A2C4; letter-spacing:0.4px; margin-top:1px;}
+
+.nav-item{
+  display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:10px;
+  font-size:13.5px; color:#B7C0DA; cursor:pointer;
+}
+.nav-item .dot{width:6px; height:6px; border-radius:50%; background:transparent;}
+.nav-item.active{background:rgba(240,134,47,0.14); color:#fff; font-weight:700;}
+.nav-item.active .dot{background:var(--saffron);}
+.nav-item.disabled{opacity:0.45; cursor:default;}
+.nav-section-label{font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:#5E6A8C; margin:18px 6px 6px;}
+.sidebar-foot{margin-top:auto; padding:14px 12px; border-radius:12px; background:rgba(255,255,255,0.05); font-size:11.5px; color:#8C97B8; line-height:1.5;}
+
+.main{flex:1; display:flex; flex-direction:column; min-width:0;}
+.topbar{
+  height:76px; background:var(--card); border-bottom:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between; padding:0 32px; flex-shrink:0; position:sticky; top:0; z-index:10;
+}
+.shell{min-height:calc(100vh - 46px);}
+.search{display:flex; align-items:center; gap:10px; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:9px 14px; width:340px; color:var(--text-dim); font-size:13px;}
+.topbar-right{display:flex; align-items:center; gap:18px;}
+.bell{width:38px; height:38px; border-radius:10px; background:var(--bg); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; position:relative;}
+.bell .ping{position:absolute; top:8px; right:9px; width:7px; height:7px; border-radius:50%; background:var(--saffron); border:1.5px solid #fff;}
+.profile{display:flex; align-items:center; gap:10px;}
+.avatar{width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#5A78C0,var(--navy-800)); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:14px;}
+.profile-name{font-size:13px; font-weight:700;}
+.profile-sub{font-size:11px; color:var(--text-dim);}
+.verified{display:inline-flex; align-items:center; gap:4px; font-size:9.5px; font-weight:700; color:var(--green); background:var(--green-bg); padding:2px 7px; border-radius:20px; margin-left:6px; letter-spacing:0.3px;}
+
+.content{padding:30px 32px 60px;}
+.page-head{display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:22px;}
+.page-title{font-size:22px; font-weight:700; color:var(--navy-950);}
+.page-sub{font-size:13px; color:var(--text-mid); margin-top:4px;}
+
+.card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius);}
+.screen{display:none;}
+.screen.active{display:block;}
+
+/* stats */
+.stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;}
+.stat-card{padding:18px 20px; position:relative; overflow:hidden;}
+.stat-label{font-size:11.5px; color:var(--text-mid); font-weight:700; text-transform:uppercase; letter-spacing:0.4px;}
+.stat-value{font-size:28px; font-weight:700; margin-top:8px; color:var(--navy-950);}
+.stat-foot{font-size:11.5px; margin-top:6px; color:var(--text-dim);}
+.stat-accent{position:absolute; top:0; left:0; width:4px; height:100%;}
+
+.section-head{display:flex; align-items:center; justify-content:space-between; margin:6px 0 14px;}
+.section-title{font-size:15px; font-weight:700; color:var(--navy-950); display:flex; align-items:center; gap:8px;}
+.link{font-size:12.5px; color:var(--saffron-dark); font-weight:700; cursor:pointer;}
+
+/* tiles */
+.tile-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px;}
+.tile{padding:18px; position:relative; cursor:default;}
+.tile.clickable{cursor:pointer; transition:transform .12s ease, box-shadow .12s ease;}
+.tile.clickable:hover{transform:translateY(-2px); box-shadow:0 14px 30px -18px rgba(22,38,74,0.35);}
+.tile-icon{width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:14px; font-size:18px;}
+.tile-dept{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; padding:3px 8px; border-radius:20px; display:inline-block;}
+.tile-title{font-size:14px; font-weight:700; margin-top:10px; color:var(--navy-950);}
+.tile-desc{font-size:11.5px; color:var(--text-mid); margin-top:4px; line-height:1.45;}
+.tile-cta{font-size:11.5px; font-weight:700; color:var(--navy-800); margin-top:14px; display:flex; align-items:center; gap:5px;}
+.tile-linked{position:absolute; top:16px; right:16px; font-size:9px; font-weight:700; color:var(--green); display:flex; align-items:center; gap:3px;}
+
+.two-col{display:grid; grid-template-columns:1.55fr 1fr; gap:20px;}
+
+.app-row{display:flex; align-items:center; gap:14px; padding:14px 16px; border-bottom:1px solid var(--line); cursor:pointer;}
+.app-row:hover{background:var(--bg);}
+.app-row:last-child{border-bottom:none;}
+.app-icon{width:36px; height:36px; border-radius:9px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;}
+.app-name{font-size:13.5px; font-weight:700; color:var(--navy-950);}
+.app-meta{font-size:11.5px; color:var(--text-dim); margin-top:2px;}
+.app-id{font-size:10.5px; color:var(--text-dim);}
+.chip{font-size:10.5px; font-weight:700; padding:4px 10px; border-radius:20px; white-space:nowrap;}
+.chip-progress{background:var(--amber-bg); color:var(--amber);}
+.chip-approved{background:var(--green-bg); color:var(--green);}
+.chip-review{background:var(--blue-tag-bg); color:var(--blue-tag);}
+
+.consent-item{display:flex; align-items:center; justify-content:space-between; padding:13px 0; border-bottom:1px solid var(--line);}
+.consent-item:last-child{border-bottom:none;}
+.consent-name{font-size:12.5px; font-weight:700; color:var(--navy-950);}
+.consent-sub{font-size:11px; color:var(--text-dim); margin-top:2px;}
+.toggle{width:34px; height:19px; border-radius:20px; background:var(--green); position:relative; flex-shrink:0; cursor:pointer;}
+.toggle::after{content:''; position:absolute; width:15px; height:15px; border-radius:50%; background:#fff; top:2px; right:2px; transition:.15s;}
+.toggle.off{background:var(--line);}
+.toggle.off::after{right:auto; left:2px;}
+
+.notif{display:flex; gap:11px; padding:12px 0; border-bottom:1px solid var(--line);}
+.notif:last-child{border-bottom:none;}
+.notif-dot{width:8px; height:8px; border-radius:50%; margin-top:5px; flex-shrink:0;}
+.notif-text{font-size:12px; color:var(--text); line-height:1.45;}
+.notif-time{font-size:10.5px; color:var(--text-dim); margin-top:3px;}
+
+/* success screen */
+.success-wrap{display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 76px); padding:50px 20px;
+  background:radial-gradient(circle at 15% 12%, rgba(240,134,47,0.07), transparent 40%), radial-gradient(circle at 85% 85%, rgba(30,157,99,0.08), transparent 40%);}
+.success-card{width:760px; max-width:100%; background:var(--card); border-radius:20px; border:1px solid var(--line); padding:46px 54px 40px; box-shadow:0 20px 50px -20px rgba(22,38,74,0.18);}
+.check-badge{width:64px; height:64px; border-radius:50%; background:var(--green-bg); display:flex; align-items:center; justify-content:center; margin:0 auto 20px;}
+.success-title{font-size:23px; font-weight:700; text-align:center; color:var(--navy-950);}
+.success-sub{font-size:13.5px; color:var(--text-mid); text-align:center; margin-top:8px; line-height:1.55;}
+.app-id-box{display:flex; align-items:center; justify-content:space-between; background:var(--navy-950); border-radius:12px; padding:16px 20px; margin:26px 0 24px; color:#fff;}
+.app-id-label{font-size:10.5px; color:#96A2C4; letter-spacing:0.5px; text-transform:uppercase; font-weight:700;}
+.app-id-val{font-size:19px; font-weight:700; margin-top:4px; letter-spacing:0.5px;}
+.copy-pill{font-size:11px; background:rgba(255,255,255,0.12); padding:6px 12px; border-radius:8px; font-weight:700; cursor:pointer;}
+.summary-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;}
+.summary-item{background:var(--bg); border-radius:10px; padding:13px 16px;}
+.summary-label{font-size:10.5px; color:var(--text-dim); text-transform:uppercase; font-weight:700; letter-spacing:0.4px;}
+.summary-val{font-size:13.5px; font-weight:700; color:var(--navy-950); margin-top:5px;}
+.doc-list{margin-bottom:26px;}
+.doc-row{display:flex; align-items:center; gap:12px; padding:10px 0;}
+.doc-check{width:22px; height:22px; border-radius:50%; background:var(--green-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.doc-name{font-size:12.5px; font-weight:700; color:var(--navy-950);}
+.doc-src{font-size:11px; color:var(--text-dim); margin-top:1px;}
+.doc-reused{margin-left:auto; font-size:9.5px; font-weight:700; color:var(--green); background:var(--green-bg); padding:3px 9px; border-radius:20px;}
+.mini-steps{display:flex; align-items:center; margin-bottom:30px;}
+.mini-step{display:flex; flex-direction:column; align-items:center; gap:8px; flex:1; position:relative;}
+.mini-step::before{content:''; position:absolute; top:11px; left:-50%; width:100%; height:2px; background:var(--line); z-index:0;}
+.mini-step:first-child::before{display:none;}
+.mini-step.done::before{background:var(--green);}
+.mini-dot{width:22px; height:22px; border-radius:50%; background:var(--line); z-index:1; display:flex; align-items:center; justify-content:center;}
+.mini-step.done .mini-dot{background:var(--green);}
+.mini-step.current .mini-dot{background:var(--saffron); box-shadow:0 0 0 4px rgba(240,134,47,0.18);}
+.mini-label{font-size:10.5px; font-weight:700; color:var(--text-mid); text-align:center;}
+.mini-step.done .mini-label, .mini-step.current .mini-label{color:var(--navy-950);}
+.btn-row{display:flex; gap:12px;}
+.btn{flex:1; text-align:center; padding:13px; border-radius:11px; font-size:13px; font-weight:700; cursor:pointer;}
+.btn-primary{background:var(--saffron); color:#fff;}
+.btn-ghost{background:var(--bg); color:var(--navy-950); border:1px solid var(--line);}
+
+/* tracking */
+.track-head-card{padding:24px 28px; margin-bottom:22px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;}
+.track-scheme{font-size:18px; font-weight:700; color:var(--navy-950);}
+.track-meta-row{display:flex; align-items:center; gap:10px; margin-top:8px; flex-wrap:wrap;}
+.progress-ring-wrap{display:flex; align-items:center; gap:14px;}
+.progress-pct{font-size:22px; font-weight:700; color:var(--navy-950);}
+.progress-pct-label{font-size:10.5px; color:var(--text-dim);}
+.stepper-v{position:relative; padding-left:6px;}
+.step-v{display:flex; gap:18px; position:relative; padding-bottom:30px;}
+.step-v:last-child{padding-bottom:0;}
+.step-line{position:absolute; left:15px; top:32px; bottom:-8px; width:2px; background:var(--line);}
+.step-v.done .step-line{background:var(--green);}
+.step-v:last-child .step-line{display:none;}
+.step-dot{width:32px; height:32px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; z-index:1;}
+.step-v.done .step-dot{background:var(--green);}
+.step-v.current .step-dot{background:var(--saffron); box-shadow:0 0 0 5px rgba(240,134,47,0.16);}
+.step-v.pending .step-dot{background:var(--card); border:2px solid var(--line);}
+.step-title{font-size:14px; font-weight:700; color:var(--navy-950);}
+.step-v.pending .step-title{color:var(--text-dim);}
+.step-time{font-size:11px; color:var(--text-dim); margin-top:2px;}
+.step-desc{font-size:12px; color:var(--text-mid); margin-top:6px; line-height:1.5; background:var(--bg); padding:10px 13px; border-radius:9px; max-width:480px;}
+.step-tag{display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; color:var(--teal-tag); background:var(--teal-tag-bg); padding:3px 9px; border-radius:20px; margin-top:8px;}
+.side-panel-card{padding:20px 22px; margin-bottom:18px;}
+.detail-row{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:12px;}
+.detail-row:last-child{border-bottom:none;}
+.detail-label{color:var(--text-dim);}
+.detail-val{font-weight:700; color:var(--navy-950); text-align:right;}
+.badge-audit{display:flex; align-items:center; gap:10px; background:var(--navy-950); border-radius:11px; padding:14px 16px; color:#fff; margin-bottom:18px;}
+.badge-audit-title{font-size:12px; font-weight:700;}
+.badge-audit-sub{font-size:10.5px; color:#96A2C4; margin-top:2px;}
+
+/* official: queue table */
+.queue-card{padding:0;}
+.queue-head-row{display:grid; grid-template-columns:2.2fr 1.3fr 1fr 1.3fr 1.4fr; gap:10px; padding:13px 20px; border-bottom:1px solid var(--line); font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-dim);}
+.queue-row{display:grid; grid-template-columns:2.2fr 1.3fr 1fr 1.3fr 1.4fr; gap:10px; padding:15px 20px; border-bottom:1px solid var(--line); align-items:center;}
+.queue-row:last-child{border-bottom:none;}
+.applicant{display:flex; align-items:center; gap:11px;}
+.applicant-avatar{width:34px; height:34px; border-radius:9px; background:var(--navy-800); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; flex-shrink:0;}
+.applicant-name{font-size:12.5px; font-weight:700; color:var(--navy-950);}
+.applicant-meta{font-size:11px; color:var(--text-dim); margin-top:2px;}
+.conn-status{display:flex; align-items:center; gap:5px; font-size:11px; color:var(--green); font-weight:700;}
+.sla-text{font-size:11.5px; font-weight:700;}
+.sla-bar-bg{width:100%; height:5px; border-radius:6px; background:var(--line); margin-top:6px; overflow:hidden;}
+.sla-bar-fill{height:100%; border-radius:6px;}
+.row-actions{display:flex; gap:8px;}
+.act-btn{font-size:11px; font-weight:700; padding:7px 12px; border-radius:8px; text-align:center; cursor:pointer;}
+.act-approve{background:var(--green); color:#fff;}
+.act-reject{background:#fff; color:var(--red); border:1px solid #F3D2D2;}
+.act-view{background:var(--bg); color:var(--navy-800); border:1px solid var(--line);}
+.connector-item{display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--line);}
+.connector-item:last-child{border-bottom:none;}
+.connector-icon{width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:15px;}
+.connector-name{font-size:12px; font-weight:700; color:var(--navy-950);}
+.connector-sub{font-size:10.5px; color:var(--text-dim); margin-top:2px;}
+.connector-badge{margin-left:auto; font-size:9.5px; font-weight:700; padding:3px 9px; border-radius:20px;}
+.mini-bar-chart{display:flex; align-items:flex-end; gap:9px; height:90px; margin-top:6px;}
+.mini-bar{flex:1; border-radius:5px 5px 0 0; background:linear-gradient(180deg, var(--saffron), var(--saffron-dark)); transition:height .4s ease;}
+.mini-bar-label{font-size:9px; color:var(--text-dim); text-align:center; margin-top:6px;}
+
+.toast{
+  position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px); opacity:0;
+  background:var(--navy-950); color:#fff; padding:12px 20px; border-radius:10px; font-size:12.5px; font-weight:600;
+  box-shadow:0 14px 30px -10px rgba(0,0,0,0.4); transition:.25s ease; z-index:2000; pointer-events:none;
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+@media (max-width:1180px){
+  .stat-row,.tile-grid{grid-template-columns:repeat(2,1fr);}
+  .two-col{grid-template-columns:1fr;}
+  .queue-head-row,.queue-row{grid-template-columns:1.8fr 1fr 1fr; }
+}
+</style>
 </head>
 <body>
 
-<!-- Grain overlay -->
-<div class="grain" aria-hidden="true"></div>
-
-<!-- Custom cursor -->
-<div class="cursor" id="cursor" aria-hidden="true">
-  <svg viewBox="0 0 60 60" class="cursor__aperture">
-    <g class="cursor__blades">
-      <path class="blade" d="M30 30 L30 4 A26 26 0 0 1 52 17 Z"></path>
-      <path class="blade" d="M30 30 L52 17 A26 26 0 0 1 52 43 Z"></path>
-      <path class="blade" d="M30 30 L52 43 A26 26 0 0 1 30 56 Z"></path>
-      <path class="blade" d="M30 30 L30 56 A26 26 0 0 1 8 43 Z"></path>
-      <path class="blade" d="M30 30 L8 43 A26 26 0 0 1 8 17 Z"></path>
-      <path class="blade" d="M30 30 L8 17 A26 26 0 0 1 30 4 Z"></path>
-    </g>
-  </svg>
+<div class="role-toggle-wrap">
+  <div class="role-btn active" id="roleBtnCitizen" onclick="switchRole('citizen')">🧑 Citizen Portal</div>
+  <div class="role-btn" id="roleBtnOfficial" onclick="switchRole('official')">🏛️ Official Console</div>
 </div>
 
-<!-- Preloader -->
-<div class="preloader" id="preloader">
-  <div class="preloader__iris"></div>
-  <div class="preloader__center">
-    <span class="preloader__mark">P</span>
-    <span class="preloader__word">PERIHELION</span>
+<!-- ============================================================= -->
+<!-- CITIZEN APP -->
+<!-- ============================================================= -->
+<div class="app-role visible" id="app-citizen">
+  <div class="shell">
+    <div class="sidebar">
+      <div class="brand" onclick="showCitizenScreen('dashboard')">
+        <div class="brand-mark">GB</div>
+        <div>
+          <div class="brand-name">GovBridge</div>
+          <div class="brand-tag">One Consent. Every Dept.</div>
+        </div>
+      </div>
+
+      <div class="nav-item active" data-nav="dashboard" onclick="showCitizenScreen('dashboard')"><span class="dot"></span> Dashboard</div>
+      <div class="nav-item" data-nav="tracking" onclick="showCitizenScreen('tracking')"><span class="dot"></span> My Applications</div>
+      <div class="nav-item disabled"><span class="dot"></span> Document Locker</div>
+      <div class="nav-item disabled"><span class="dot"></span> Consent Manager</div>
+      <div class="nav-item" data-nav="tracking" onclick="showCitizenScreen('tracking')"><span class="dot"></span> Track Status</div>
+      <div class="nav-item disabled"><span class="dot"></span> Grievances</div>
+
+      <div class="nav-section-label">Account</div>
+      <div class="nav-item disabled"><span class="dot"></span> Profile &amp; KYC</div>
+      <div class="nav-item disabled"><span class="dot"></span> Settings</div>
+
+      <div class="sidebar-foot">
+        Unified Citizen ID<br>
+        <span class="mono" style="color:#fff; font-size:12px;">UCI-7741-2093-AK</span>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="topbar">
+        <div class="search">🔍&nbsp; Search services — e.g. "scholarship", "income certificate"</div>
+        <div class="topbar-right">
+          <div class="bell">🔔<span class="ping"></span></div>
+          <div class="profile">
+            <div class="avatar">MK</div>
+            <div>
+              <div class="profile-name">Mansi Kulkarni <span class="verified">✓ Aadhaar Verified</span></div>
+              <div class="profile-sub">Citizen · Pune, Maharashtra</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <!-- ===== SCREEN: DASHBOARD ===== -->
+        <div class="screen active" id="screen-dashboard">
+          <div class="page-head">
+            <div>
+              <div class="page-title">Welcome back, Mansi 👋</div>
+              <div class="page-sub">You're logged in once — connected to 4 government departments via GovBridge.</div>
+            </div>
+          </div>
+
+          <div class="stat-row">
+            <div class="card stat-card"><div class="stat-accent" style="background:var(--amber);"></div>
+              <div class="stat-label">In Progress</div><div class="stat-value">3</div><div class="stat-foot">Across 2 departments</div></div>
+            <div class="card stat-card"><div class="stat-accent" style="background:var(--green);"></div>
+              <div class="stat-label">Approved</div><div class="stat-value">5</div><div class="stat-foot">Last: Income Certificate</div></div>
+            <div class="card stat-card"><div class="stat-accent" style="background:var(--blue-tag);"></div>
+              <div class="stat-label">Consents Granted</div><div class="stat-value">4</div><div class="stat-foot">1 awaiting your review</div></div>
+            <div class="card stat-card"><div class="stat-accent" style="background:var(--saffron);"></div>
+              <div class="stat-label">Avg. Processing Time</div><div class="stat-value">4.2 <span style="font-size:14px; font-weight:700; color:var(--text-dim);">days</span></div><div class="stat-foot">38% faster via GovBridge</div></div>
+          </div>
+
+          <div class="section-head">
+            <div class="section-title">Government Services — apply once, verified everywhere</div>
+            <div class="link">View all departments →</div>
+          </div>
+          <div class="tile-grid">
+            <div class="card tile"><div class="tile-linked">🔗 Connected</div>
+              <div class="tile-icon" style="background:var(--blue-tag-bg);">🧾</div>
+              <div class="tile-dept" style="background:var(--blue-tag-bg); color:var(--blue-tag);">Revenue Dept</div>
+              <div class="tile-title">Income Certificate</div>
+              <div class="tile-desc">Auto-filled using your verified KYC &amp; last ITR record.</div>
+              <div class="tile-cta">Apply now →</div>
+            </div>
+            <div class="card tile"><div class="tile-linked">🔗 Connected</div>
+              <div class="tile-icon" style="background:var(--teal-tag-bg);">🩺</div>
+              <div class="tile-dept" style="background:var(--teal-tag-bg); color:var(--teal-tag);">Health Dept</div>
+              <div class="tile-title">Ayushman Health Card</div>
+              <div class="tile-desc">Eligibility auto-checked against family income data.</div>
+              <div class="tile-cta">Apply now →</div>
+            </div>
+            <div class="card tile clickable" onclick="applyScholarship()"><div class="tile-linked">🔗 Connected</div>
+              <div class="tile-icon" style="background:var(--violet-tag-bg);">🎓</div>
+              <div class="tile-dept" style="background:var(--violet-tag-bg); color:var(--violet-tag);">Tribal Welfare</div>
+              <div class="tile-title">Post-Matric Scholarship</div>
+              <div class="tile-desc">Reuses your Income &amp; Caste Certificate — no re-upload.</div>
+              <div class="tile-cta">Apply now →</div>
+            </div>
+            <div class="card tile"><div class="tile-linked">🔗 Connected</div>
+              <div class="tile-icon" style="background:var(--amber-bg);">🏠</div>
+              <div class="tile-dept" style="background:var(--amber-bg); color:var(--amber);">Civic Dept</div>
+              <div class="tile-title">Property Tax Payment</div>
+              <div class="tile-desc">Fetches property records via unified data hub.</div>
+              <div class="tile-cta">Apply now →</div>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div>
+              <div class="section-head">
+                <div class="section-title">Recent Applications</div>
+                <div class="link" onclick="showCitizenScreen('tracking')">See all →</div>
+              </div>
+              <div class="card">
+                <div class="app-row" onclick="showCitizenScreen('tracking')">
+                  <div class="app-icon" style="background:var(--violet-tag-bg); color:var(--violet-tag);">TW</div>
+                  <div style="flex:1;">
+                    <div class="app-name">Post-Matric Scholarship 2026</div>
+                    <div class="app-meta">Tribal Welfare Dept</div>
+                    <div class="app-id mono">GB-2026-TWD-004821</div>
+                  </div>
+                  <div class="chip chip-review">Under Review</div>
+                </div>
+                <div class="app-row">
+                  <div class="app-icon" style="background:var(--blue-tag-bg); color:var(--blue-tag);">RD</div>
+                  <div style="flex:1;">
+                    <div class="app-name">Income Certificate Renewal</div>
+                    <div class="app-meta">Revenue Dept</div>
+                    <div class="app-id mono">GB-2026-RD-002140</div>
+                  </div>
+                  <div class="chip chip-approved">Approved</div>
+                </div>
+                <div class="app-row">
+                  <div class="app-icon" style="background:var(--teal-tag-bg); color:var(--teal-tag);">HD</div>
+                  <div style="flex:1;">
+                    <div class="app-name">Ayushman Card Update</div>
+                    <div class="app-meta">Health Dept</div>
+                    <div class="app-id mono">GB-2026-HD-009312</div>
+                  </div>
+                  <div class="chip chip-progress">Documents Pending</div>
+                </div>
+                <div class="app-row">
+                  <div class="app-icon" style="background:var(--amber-bg); color:var(--amber);">CV</div>
+                  <div style="flex:1;">
+                    <div class="app-name">Property Tax Receipt FY25-26</div>
+                    <div class="app-meta">Civic Dept</div>
+                    <div class="app-id mono">GB-2025-CV-018820</div>
+                  </div>
+                  <div class="chip chip-approved">Approved</div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="section-head"><div class="section-title">Your Consents</div><div class="link">Manage →</div></div>
+              <div class="card" style="padding:16px 20px; margin-bottom:20px;">
+                <div class="consent-item">
+                  <div><div class="consent-name">Share Income data with Tribal Welfare</div><div class="consent-sub">Granted for scholarship application</div></div>
+                  <div class="toggle" onclick="this.classList.toggle('off')"></div>
+                </div>
+                <div class="consent-item">
+                  <div><div class="consent-name">Share KYC with Health Dept</div><div class="consent-sub">Granted for Ayushman Card</div></div>
+                  <div class="toggle" onclick="this.classList.toggle('off')"></div>
+                </div>
+                <div class="consent-item">
+                  <div><div class="consent-name">Share Property record with Civic Dept</div><div class="consent-sub">Granted for tax auto-fetch</div></div>
+                  <div class="toggle" onclick="this.classList.toggle('off')"></div>
+                </div>
+              </div>
+
+              <div class="section-head"><div class="section-title">Notifications</div></div>
+              <div class="card" style="padding:16px 20px;">
+                <div class="notif"><div class="notif-dot" style="background:var(--saffron);"></div>
+                  <div><div class="notif-text">Your <b>Scholarship</b> application moved to <b>Under Review</b>.</div><div class="notif-time">2 hours ago</div></div></div>
+                <div class="notif"><div class="notif-dot" style="background:var(--green);"></div>
+                  <div><div class="notif-text"><b>Income Certificate</b> approved &amp; added to Document Locker.</div><div class="notif-time">Yesterday, 6:40 PM</div></div></div>
+                <div class="notif"><div class="notif-dot" style="background:var(--blue-tag);"></div>
+                  <div><div class="notif-text">Health Dept requested 1 additional document.</div><div class="notif-time">2 days ago</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== SCREEN: SUCCESS ===== -->
+        <div class="screen" id="screen-success">
+          <div class="success-wrap">
+            <div class="success-card">
+              <div class="check-badge">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M5 13l4.5 4.5L19.5 7" stroke="#1E9D63" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="success-title">Application Submitted Successfully!</div>
+              <div class="success-sub">Your Post-Matric Scholarship 2026 application has been sent to the<br>Tribal Welfare Department for verification.</div>
+
+              <div class="app-id-box">
+                <div><div class="app-id-label">Application ID</div><div class="app-id-val mono">GB-2026-TWD-004821</div></div>
+                <div class="copy-pill" onclick="copyId()">⧉ Copy ID</div>
+              </div>
+
+              <div class="summary-grid">
+                <div class="summary-item"><div class="summary-label">Scheme</div><div class="summary-val">Post-Matric Scholarship 2026</div></div>
+                <div class="summary-item"><div class="summary-label">Department</div><div class="summary-val">Tribal Welfare Dept</div></div>
+                <div class="summary-item"><div class="summary-label">Submitted On</div><div class="summary-val">30 Aug 2026, 11:42 AM</div></div>
+                <div class="summary-item"><div class="summary-label">Expected Decision By</div><div class="summary-val">08 Sep 2026</div></div>
+              </div>
+
+              <div class="section-head" style="margin-top:2px;"><div class="section-title" style="font-size:13px;">Documents used — verified &amp; reused via consent</div></div>
+              <div class="doc-list">
+                <div class="doc-row">
+                  <div class="doc-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4.5 4.5L19.5 7" stroke="#1E9D63" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                  <div><div class="doc-name">Income Certificate</div><div class="doc-src">Fetched from Revenue Dept</div></div>
+                  <div class="doc-reused">Reused · No re-upload</div>
+                </div>
+                <div class="doc-row">
+                  <div class="doc-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4.5 4.5L19.5 7" stroke="#1E9D63" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                  <div><div class="doc-name">Caste Certificate</div><div class="doc-src">Fetched from Tribal Welfare records</div></div>
+                  <div class="doc-reused">Reused · No re-upload</div>
+                </div>
+                <div class="doc-row">
+                  <div class="doc-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4.5 4.5L19.5 7" stroke="#1E9D63" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                  <div><div class="doc-name">Aadhaar e-KYC</div><div class="doc-src">Verified at login via Keycloak SSO</div></div>
+                  <div class="doc-reused">Verified</div>
+                </div>
+              </div>
+
+              <div class="mini-steps">
+                <div class="mini-step done"><div class="mini-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M5 13l4.5 4.5L19.5 7" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="mini-label">Submitted</div></div>
+                <div class="mini-step current"><div class="mini-dot"></div><div class="mini-label">Verification</div></div>
+                <div class="mini-step"><div class="mini-dot"></div><div class="mini-label">Approval</div></div>
+                <div class="mini-step"><div class="mini-dot"></div><div class="mini-label">Disbursement</div></div>
+              </div>
+
+              <div class="btn-row">
+                <div class="btn btn-ghost" onclick="showToast('Acknowledgement PDF downloaded (demo)')">⬇ Download Acknowledgement</div>
+                <div class="btn btn-primary" onclick="showCitizenScreen('tracking')">Track Application →</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== SCREEN: TRACKING ===== -->
+        <div class="screen" id="screen-tracking">
+          <div class="page-head">
+            <div>
+              <div class="page-title">Track Application</div>
+              <div class="page-sub">Live status pulled directly from the Tribal Welfare Dept system via GovBridge.</div>
+            </div>
+          </div>
+
+          <div class="card track-head-card">
+            <div>
+              <div class="track-scheme">Post-Matric Scholarship 2026</div>
+              <div class="track-meta-row">
+                <div class="app-id mono" style="font-size:12px;">GB-2026-TWD-004821</div>
+                <div class="tile-dept" style="background:var(--violet-tag-bg); color:var(--violet-tag);">Tribal Welfare Dept</div>
+                <div class="chip chip-review">Under Review</div>
+              </div>
+            </div>
+            <div class="progress-ring-wrap">
+              <svg width="64" height="64" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="27" stroke="#E4E8EF" stroke-width="7" fill="none"/>
+                <circle cx="32" cy="32" r="27" stroke="#F0862F" stroke-width="7" fill="none" stroke-dasharray="169.6" stroke-dashoffset="67.8" stroke-linecap="round" transform="rotate(-90 32 32)"/>
+              </svg>
+              <div><div class="progress-pct">60%</div><div class="progress-pct-label">complete</div></div>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div>
+              <div class="card" style="padding:26px 28px;">
+                <div class="section-title" style="margin-bottom:20px;">Status Timeline</div>
+                <div class="stepper-v">
+                  <div class="step-v done"><div class="step-line"></div>
+                    <div class="step-dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4.5 4.5L19.5 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <div><div class="step-title">Application Submitted</div><div class="step-time">30 Aug 2026, 11:42 AM</div>
+                      <div class="step-desc">Received by GovBridge and routed to Tribal Welfare Dept. Income &amp; caste data auto-attached from your consented records.</div></div>
+                  </div>
+                  <div class="step-v done"><div class="step-line"></div>
+                    <div class="step-dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4.5 4.5L19.5 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <div><div class="step-title">Document Verification</div><div class="step-time">31 Aug 2026, 3:10 PM</div>
+                      <div class="step-desc">Income Certificate verified instantly via Revenue Dept connector — no manual resubmission was needed.</div>
+                      <div class="step-tag">⇄ Verified via GovBridge connector</div></div>
+                  </div>
+                  <div class="step-v current"><div class="step-line"></div>
+                    <div class="step-dot" style="color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px;">●</div>
+                    <div><div class="step-title">Under Review — Welfare Officer</div><div class="step-time">In progress · started 1 Sep 2026</div>
+                      <div class="step-desc">Assigned to Officer R. Deshmukh, Tribal Welfare Dept. Typical review time: 4–6 working days.</div></div>
+                  </div>
+                  <div class="step-v pending"><div class="step-line"></div>
+                    <div class="step-dot"></div>
+                    <div><div class="step-title">Approval</div><div class="step-time">Expected by 8 Sep 2026</div></div>
+                  </div>
+                  <div class="step-v pending">
+                    <div class="step-dot"></div>
+                    <div><div class="step-title">Scholarship Disbursement</div><div class="step-time">Expected by 12 Sep 2026</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="badge-audit">
+                <div style="font-size:20px;">🔒</div>
+                <div><div class="badge-audit-title">Tamper-proof audit trail</div><div class="badge-audit-sub">Every status change is logged on Hyperledger Fabric</div></div>
+              </div>
+              <div class="card side-panel-card">
+                <div class="section-title" style="font-size:13px; margin-bottom:6px;">Application Details</div>
+                <div class="detail-row"><div class="detail-label">Applicant</div><div class="detail-val">Ananya Kulkarni</div></div>
+                <div class="detail-row"><div class="detail-label">Scheme amount</div><div class="detail-val">₹ 42,000 / year</div></div>
+                <div class="detail-row"><div class="detail-label">Academic year</div><div class="detail-val">2026–27</div></div>
+                <div class="detail-row"><div class="detail-label">Assigned officer</div><div class="detail-val">R. Deshmukh</div></div>
+                <div class="detail-row"><div class="detail-label">SLA</div><div class="detail-val">9 working days</div></div>
+              </div>
+              <div class="card side-panel-card">
+                <div class="section-title" style="font-size:13px; margin-bottom:6px;">Need help?</div>
+                <div style="font-size:12px; color:var(--text-mid); line-height:1.55; margin-bottom:14px;">
+                  If your application isn't progressing within the SLA window, you can raise a grievance — it routes directly to the department's escalation desk.
+                </div>
+                <div class="btn btn-ghost" style="font-size:12px;" onclick="showToast('Grievance form opened (demo)')">⚑ Raise a Grievance</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- Nav -->
-<header class="nav" id="nav">
-  <a href="#entrance" class="nav__logo">PERIHELION<span class="nav__ring">°</span></a>
+<!-- ============================================================= -->
+<!-- OFFICIAL APP -->
+<!-- ============================================================= -->
+<div class="app-role" id="app-official">
+  <div class="shell">
+    <div class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">GB</div>
+        <div><div class="brand-name">GovBridge</div><div class="brand-tag">Official Console</div></div>
+      </div>
+      <div class="nav-item active"><span class="dot"></span> Dashboard</div>
+      <div class="nav-item disabled"><span class="dot"></span> Application Queue</div>
+      <div class="nav-item disabled"><span class="dot"></span> Verify via Connectors</div>
+      <div class="nav-item disabled"><span class="dot"></span> Master Data Hub</div>
+      <div class="nav-item disabled"><span class="dot"></span> Reports &amp; Analytics</div>
+      <div class="nav-item disabled"><span class="dot"></span> Audit Logs</div>
+      <div class="nav-section-label">Account</div>
+      <div class="nav-item disabled"><span class="dot"></span> Department Profile</div>
+      <div class="nav-item disabled"><span class="dot"></span> Settings</div>
+      <div class="sidebar-foot">Logged in as Official<br><span class="mono" style="color:#fff; font-size:12px;">TWD-OFC-0142</span></div>
+    </div>
 
-  <nav class="nav__links" id="navLinks">
-    <a href="#studio"><span class="nav__num">II</span>Studio</a>
-    <a href="#disciplines"><span class="nav__num">III</span>Disciplines</a>
-    <a href="#exhibits"><span class="nav__num">IV</span>Exhibits</a>
-    <a href="#begin"><span class="nav__num">VII</span>Begin</a>
-  </nav>
+    <div class="main">
+      <div class="topbar">
+        <div class="search">🔍&nbsp; Search applicant name, application ID, scheme...</div>
+        <div class="topbar-right">
+          <div class="bell">🔔<span class="ping"></span></div>
+          <div class="profile">
+            <div class="avatar" style="background:linear-gradient(135deg,#7A54D1,var(--navy-800));">RD</div>
+            <div><div class="profile-name">R. Deshmukh <span class="verified" style="background:var(--violet-tag-bg); color:var(--violet-tag);">Tribal Welfare Dept</span></div>
+              <div class="profile-sub">Welfare Officer · Pune Division</div></div>
+          </div>
+        </div>
+      </div>
 
-  <div class="nav__controls">
-    <button class="toggle" id="themeToggle" aria-label="Toggle light and dark mode">
-      <span class="toggle__blade"></span>
-    </button>
-    <a href="#begin" class="pill-cta">Contact Us</a>
-    <button class="nav__burger" id="navBurger" aria-label="Open menu">
-      <span></span><span></span>
-    </button>
+      <div class="content">
+        <div class="page-head">
+          <div>
+            <div class="page-title">Good morning, Officer Deshmukh</div>
+            <div class="page-sub">14 applications need action today · Master Data Hub last synced 6 minutes ago.</div>
+          </div>
+        </div>
+
+        <div class="stat-row">
+          <div class="card stat-card"><div class="stat-accent" style="background:var(--amber);"></div>
+            <div class="stat-label">Pending Review</div><div class="stat-value" id="pendingCount">14</div><div class="stat-foot">5 breaching SLA in 2 days</div></div>
+          <div class="card stat-card"><div class="stat-accent" style="background:var(--green);"></div>
+            <div class="stat-label">Approved Today</div><div class="stat-value" id="approvedCount">9</div><div class="stat-foot">Avg. decision time 6.4 min</div></div>
+          <div class="card stat-card"><div class="stat-accent" style="background:var(--blue-tag);"></div>
+            <div class="stat-label">SLA Compliance</div><div class="stat-value">94%</div><div class="stat-foot">↑ 6% vs last month</div></div>
+          <div class="card stat-card"><div class="stat-accent" style="background:var(--red);"></div>
+            <div class="stat-label">Open Grievances</div><div class="stat-value">2</div><div class="stat-foot">1 escalated to HOD</div></div>
+        </div>
+
+        <div class="two-col" style="grid-template-columns:1.85fr 1fr;">
+          <div>
+            <div class="section-head"><div class="section-title">Application Queue — auto-verified via connectors</div><div class="link">Filter →</div></div>
+            <div class="card queue-card">
+              <div class="queue-head-row"><div>Applicant</div><div>Scheme</div><div>Connector Check</div><div>SLA</div><div style="text-align:right;">Action</div></div>
+
+              <div class="queue-row" id="row-1">
+                <div class="applicant"><div class="applicant-avatar">AK</div><div><div class="applicant-name">Ananya Kulkarni</div><div class="applicant-meta mono">GB-2026-TWD-004821</div></div></div>
+                <div style="font-size:12px; color:var(--text-mid);">Post-Matric Scholarship</div>
+                <div class="conn-status">✓ Verified</div>
+                <div><div class="sla-text" style="color:var(--amber);">2 days left</div><div class="sla-bar-bg"><div class="sla-bar-fill" style="width:70%; background:var(--amber);"></div></div></div>
+                <div class="row-actions">
+                  <div class="act-btn act-approve" onclick="decideRow('row-1','Approved')">Approve</div>
+                  <div class="act-btn act-reject" onclick="decideRow('row-1','Rejected')">Reject</div>
+                </div>
+              </div>
+
+              <div class="queue-row" id="row-2">
+                <div class="applicant"><div class="applicant-avatar" style="background:#5A78C0;">MP</div><div><div class="applicant-name">Manoj Pawar</div><div class="applicant-meta mono">GB-2026-TWD-004798</div></div></div>
+                <div style="font-size:12px; color:var(--text-mid);">Hostel Fee Reimbursement</div>
+                <div class="conn-status">✓ Verified</div>
+                <div><div class="sla-text" style="color:var(--green);">5 days left</div><div class="sla-bar-bg"><div class="sla-bar-fill" style="width:35%; background:var(--green);"></div></div></div>
+                <div class="row-actions">
+                  <div class="act-btn act-approve" onclick="decideRow('row-2','Approved')">Approve</div>
+                  <div class="act-btn act-reject" onclick="decideRow('row-2','Rejected')">Reject</div>
+                </div>
+              </div>
+
+              <div class="queue-row" id="row-3">
+                <div class="applicant"><div class="applicant-avatar" style="background:#0E9488;">SJ</div><div><div class="applicant-name">Sneha Jadhav</div><div class="applicant-meta mono">GB-2026-TWD-004765</div></div></div>
+                <div style="font-size:12px; color:var(--text-mid);">Post-Matric Scholarship</div>
+                <div class="conn-status" style="color:var(--amber);">⏳ Pending Revenue Dept</div>
+                <div><div class="sla-text" style="color:var(--red);">Overdue 1 day</div><div class="sla-bar-bg"><div class="sla-bar-fill" style="width:100%; background:var(--red);"></div></div></div>
+                <div class="row-actions"><div class="act-btn act-view" style="width:100%;" onclick="showToast('Opening application detail (demo)')">View</div></div>
+              </div>
+
+              <div class="queue-row" id="row-4">
+                <div class="applicant"><div class="applicant-avatar" style="background:#D9822B;">VK</div><div><div class="applicant-name">Vikram Khot</div><div class="applicant-meta mono">GB-2026-TWD-004751</div></div></div>
+                <div style="font-size:12px; color:var(--text-mid);">Pre-Matric Scholarship</div>
+                <div class="conn-status">✓ Verified</div>
+                <div><div class="sla-text" style="color:var(--green);">6 days left</div><div class="sla-bar-bg"><div class="sla-bar-fill" style="width:20%; background:var(--green);"></div></div></div>
+                <div class="row-actions">
+                  <div class="act-btn act-approve" onclick="decideRow('row-4','Approved')">Approve</div>
+                  <div class="act-btn act-reject" onclick="decideRow('row-4','Rejected')">Reject</div>
+                </div>
+              </div>
+
+              <div class="queue-row" id="row-5">
+                <div class="applicant"><div class="applicant-avatar" style="background:#7A54D1;">PS</div><div><div class="applicant-name">Priya Salunkhe</div><div class="applicant-meta mono">GB-2026-TWD-004732</div></div></div>
+                <div style="font-size:12px; color:var(--text-mid);">Post-Matric Scholarship</div>
+                <div class="conn-status">✓ Verified</div>
+                <div><div class="sla-text" style="color:var(--green);">4 days left</div><div class="sla-bar-bg"><div class="sla-bar-fill" style="width:45%; background:var(--green);"></div></div></div>
+                <div class="row-actions">
+                  <div class="act-btn act-approve" onclick="decideRow('row-5','Approved')">Approve</div>
+                  <div class="act-btn act-reject" onclick="decideRow('row-5','Rejected')">Reject</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-head" style="margin-top:24px;"><div class="section-title">Applications Processed — last 7 days</div></div>
+            <div class="card" style="padding:20px 24px;">
+              <div class="mini-bar-chart">
+                <div style="flex:1;"><div class="mini-bar" style="height:38px;"></div><div class="mini-bar-label">Mon</div></div>
+                <div style="flex:1;"><div class="mini-bar" style="height:52px;"></div><div class="mini-bar-label">Tue</div></div>
+                <div style="flex:1;"><div class="mini-bar" style="height:44px;"></div><div class="mini-bar-label">Wed</div></div>
+                <div style="flex:1;"><div class="mini-bar" style="height:68px;"></div><div class="mini-bar-label">Thu</div></div>
+                <div style="flex:1;"><div class="mini-bar" style="height:58px;"></div><div class="mini-bar-label">Fri</div></div>
+                <div style="flex:1;"><div class="mini-bar" style="height:30px; background:linear-gradient(180deg,#C7CDDA,#AEB6C7);"></div><div class="mini-bar-label">Sat</div></div>
+                <div style="flex:1;"><div class="mini-bar" style="height:18px; background:linear-gradient(180deg,#C7CDDA,#AEB6C7);"></div><div class="mini-bar-label">Sun</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="section-head"><div class="section-title">Connector Status</div></div>
+            <div class="card" style="padding:16px 20px; margin-bottom:20px;">
+              <div class="connector-item"><div class="connector-icon" style="background:var(--blue-tag-bg);">🧾</div>
+                <div><div class="connector-name">Revenue Dept API</div><div class="connector-sub">Income Certificate lookups</div></div>
+                <div class="connector-badge" style="background:var(--green-bg); color:var(--green);">Online</div></div>
+              <div class="connector-item"><div class="connector-icon" style="background:var(--violet-tag-bg);">🪪</div>
+                <div><div class="connector-name">Aadhaar eKYC (Keycloak)</div><div class="connector-sub">Identity verification</div></div>
+                <div class="connector-badge" style="background:var(--green-bg); color:var(--green);">Online</div></div>
+              <div class="connector-item"><div class="connector-icon" style="background:var(--teal-tag-bg);">🏥</div>
+                <div><div class="connector-name">Health Dept Connector</div><div class="connector-sub">Family income cross-check</div></div>
+                <div class="connector-badge" style="background:var(--green-bg); color:var(--green);">Online</div></div>
+              <div class="connector-item"><div class="connector-icon" style="background:var(--amber-bg);">🏫</div>
+                <div><div class="connector-name">Education Dept (SFTP)</div><div class="connector-sub">Enrollment records — legacy adapter</div></div>
+                <div class="connector-badge" style="background:var(--amber-bg); color:var(--amber);">Degraded</div></div>
+            </div>
+
+            <div class="badge-audit"><div style="font-size:20px;">🗄️</div>
+              <div><div class="badge-audit-title">Master Data Hub</div><div class="badge-audit-sub">No new database — links existing dept records</div></div></div>
+
+            <div class="card side-panel-card">
+              <div class="section-title" style="font-size:13px; margin-bottom:10px;">Today's Sync Summary</div>
+              <div class="detail-row"><div class="detail-label">Records linked</div><div class="detail-val">1,284</div></div>
+              <div class="detail-row"><div class="detail-label">New verifications</div><div class="detail-val">96</div></div>
+              <div class="detail-row"><div class="detail-label">Conflicts flagged</div><div class="detail-val">3</div></div>
+              <div class="detail-row"><div class="detail-label">Last full sync</div><div class="detail-val">6 min ago</div></div>
+            </div>
+
+            <div class="card side-panel-card" style="margin-bottom:0;">
+              <div class="section-title" style="font-size:13px; margin-bottom:6px;">Generate Report</div>
+              <div style="font-size:12px; color:var(--text-mid); line-height:1.55; margin-bottom:14px;">Export SLA compliance, disbursement and audit reports for this month.</div>
+              <div class="btn btn-primary" style="font-size:12px;" onclick="showToast('Monthly report generated (demo)')">📊 Generate Monthly Report</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-</header>
-
-<!-- Mobile menu -->
-<div class="mobile-menu" id="mobileMenu">
-  <a href="#studio">Studio</a>
-  <a href="#disciplines">Disciplines</a>
-  <a href="#exhibits">Exhibits</a>
-  <a href="#voices">Voices</a>
-  <a href="#begin">Begin</a>
 </div>
 
-<main>
+<div class="toast" id="toast"></div>
 
-  <!-- I. ENTRANCE -->
-  <section class="entrance" id="entrance">
-    <div class="entrance__vignette" aria-hidden="true"></div>
-    <canvas id="fieldCanvas" class="entrance__field"></canvas>
+<script>
+function switchRole(role){
+  document.getElementById('app-citizen').classList.toggle('visible', role==='citizen');
+  document.getElementById('app-official').classList.toggle('visible', role==='official');
+  document.getElementById('roleBtnCitizen').classList.toggle('active', role==='citizen');
+  document.getElementById('roleBtnOfficial').classList.toggle('active', role==='official');
+  window.scrollTo(0,0);
+}
 
-    <svg class="orbit-rings" viewBox="0 0 800 800" aria-hidden="true">
-      <circle cx="400" cy="400" r="220" class="orbit-ring orbit-ring--1"></circle>
-      <circle cx="400" cy="400" r="300" class="orbit-ring orbit-ring--2"></circle>
-      <circle cx="400" cy="400" r="380" class="orbit-ring orbit-ring--3"></circle>
-    </svg>
+function showCitizenScreen(name){
+  document.querySelectorAll('#app-citizen .screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.querySelectorAll('#app-citizen .nav-item[data-nav]').forEach(n=>{
+    n.classList.toggle('active', n.getAttribute('data-nav')===name);
+  });
+  document.querySelector('#app-citizen .content').scrollTo(0,0);
+  window.scrollTo(0,0);
+}
 
-    <div class="orb-wrap" id="orbWrap" aria-hidden="true">
-      <div class="orb" id="orb">
-        <span class="orb__shine"></span>
-      </div>
-      <div class="orb__shard orb__shard--1"></div>
-      <div class="orb__shard orb__shard--2"></div>
-    </div>
+function applyScholarship(){
+  showCitizenScreen('success');
+  showToast('Application auto-filled from your consented records');
+}
 
-    <div class="entrance__inner">
-      <p class="eyebrow" data-reveal>I — ENTRANCE <span class="eyebrow__dot"></span> ESTABLISHED IN THE DARK</p>
-      <h1 class="entrance__title" id="entranceTitle">
-        <span class="line" data-reveal>Interfaces,</span>
-        <span class="line" data-reveal>staged like <em>light.</em></span>
-      </h1>
-      <p class="entrance__sub" data-reveal>
-        A small studio designing websites and digital work built the way an exhibition is built —
-        with restraint, rhythm, and something worth walking toward.
-      </p>
-      <div class="entrance__cta" data-reveal>
-        <a href="#exhibits" class="btn btn--ghost">View the exhibits</a>
-        <a href="#begin" class="btn btn--fill">Begin a project</a>
-      </div>
-    </div>
+function copyId(){
+  showToast('Application ID copied: GB-2026-TWD-004821');
+}
 
-    <div class="entrance__scroll" aria-hidden="true">
-      <span>SCROLL</span>
-      <div class="entrance__scroll-line"></div>
-    </div>
-  </section>
+function decideRow(rowId, decision){
+  const row = document.getElementById(rowId);
+  if(!row) return;
+  row.style.transition='opacity .3s ease';
+  row.style.opacity='0.35';
+  const actions = row.querySelector('.row-actions');
+  actions.innerHTML = '<div class="chip '+(decision==='Approved'?'chip-approved':'chip-progress')+'">'+decision+'</div>';
+  const pendingEl = document.getElementById('pendingCount');
+  const approvedEl = document.getElementById('approvedCount');
+  pendingEl.textContent = Math.max(0, parseInt(pendingEl.textContent)-1);
+  if(decision==='Approved'){ approvedEl.textContent = parseInt(approvedEl.textContent)+1; }
+  showToast('Application '+decision.toLowerCase()+' · Master Data Hub updated');
+}
 
-  <!-- II. STUDIO -->
-  <section class="studio" id="studio">
-    <div class="room-label" data-reveal><span>II</span>Studio</div>
-
-    <div class="studio__grid">
-      <p class="studio__lede" data-reveal>
-        We don't build funnels. We build rooms people want to walk through twice —
-        then send to a friend without being asked to.
-      </p>
-      <div class="studio__body" data-reveal>
-        <p>
-          Perihelion is the point in an orbit closest to the light. We named the studio after it
-          because that's the only brief we ever take on twice: get the thing closer to the light,
-          then get out of the way.
-        </p>
-        <p>
-          Every engagement starts as a question about composition, pacing and restraint — and ends
-          as a website, a brand system, or a piece of interactive work that didn't exist before.
-        </p>
-      </div>
-    </div>
-
-    <ul class="studio__values" data-reveal>
-      <li>Craft</li>
-      <li>Restraint</li>
-      <li>Atmosphere</li>
-      <li>Precision</li>
-    </ul>
-  </section>
-
-  <!-- III. DISCIPLINES -->
-  <section class="disciplines" id="disciplines">
-    <div class="room-label" data-reveal><span>III</span>Disciplines</div>
-
-    <ul class="discipline-list">
-      <li class="discipline" data-reveal data-tilt>
-        <span class="discipline__num">01</span>
-        <div class="discipline__text">
-          <h3>Web Design</h3>
-          <p>Interfaces composed like stage sets — light, hierarchy, and pacing before pixels.</p>
-        </div>
-        <span class="discipline__icon" aria-hidden="true"></span>
-      </li>
-      <li class="discipline" data-reveal data-tilt>
-        <span class="discipline__num">02</span>
-        <div class="discipline__text">
-          <h3>Web Development</h3>
-          <p>Hand-built front ends. No page builders, no recycled templates, no bloat.</p>
-        </div>
-        <span class="discipline__icon" aria-hidden="true"></span>
-      </li>
-      <li class="discipline" data-reveal data-tilt>
-        <span class="discipline__num">03</span>
-        <div class="discipline__text">
-          <h3>Brand Identity</h3>
-          <p>Marks, type systems and colour languages that hold up in a gallery and a browser tab.</p>
-        </div>
-        <span class="discipline__icon" aria-hidden="true"></span>
-      </li>
-      <li class="discipline" data-reveal data-tilt>
-        <span class="discipline__num">04</span>
-        <div class="discipline__text">
-          <h3>Motion &amp; Interaction</h3>
-          <p>Micro-animation and scroll choreography that gives a static page an actual pulse.</p>
-        </div>
-        <span class="discipline__icon" aria-hidden="true"></span>
-      </li>
-      <li class="discipline" data-reveal data-tilt>
-        <span class="discipline__num">05</span>
-        <div class="discipline__text">
-          <h3>Digital Installations</h3>
-          <p>Experimental one-off pieces — generative art, launch pages, and things built to be remembered.</p>
-        </div>
-        <span class="discipline__icon" aria-hidden="true"></span>
-      </li>
-    </ul>
-  </section>
-
-  <!-- IV. EXHIBITS -->
-  <section class="exhibits" id="exhibits">
-    <div class="room-label" data-reveal><span>IV</span>Exhibits</div>
-    <p class="exhibits__note" data-reveal>Selected studies. Each piece generated live in your browser — no two visits render the same.</p>
-
-    <div class="exhibit-grid">
-      <article class="exhibit" data-reveal data-tilt data-seed="1">
-        <canvas class="exhibit__canvas"></canvas>
-        <div class="exhibit__plate">
-          <h3>Nocturne</h3>
-          <dl>
-            <div><dt>Client</dt><dd>Fragrance House</dd></div>
-            <div><dt>Medium</dt><dd>Flagship Site</dd></div>
-            <div><dt>Year</dt><dd>2025</dd></div>
-          </dl>
-        </div>
-      </article>
-
-      <article class="exhibit" data-reveal data-tilt data-seed="2">
-        <canvas class="exhibit__canvas"></canvas>
-        <div class="exhibit__plate">
-          <h3>Numéro</h3>
-          <dl>
-            <div><dt>Client</dt><dd>Independent Label</dd></div>
-            <div><dt>Medium</dt><dd>Brand + Web</dd></div>
-            <div><dt>Year</dt><dd>2025</dd></div>
-          </dl>
-        </div>
-      </article>
-
-      <article class="exhibit" data-reveal data-tilt data-seed="3">
-        <canvas class="exhibit__canvas"></canvas>
-        <div class="exhibit__plate">
-          <h3>Atlas Type</h3>
-          <dl>
-            <div><dt>Client</dt><dd>Type Foundry</dd></div>
-            <div><dt>Medium</dt><dd>Catalogue Site</dd></div>
-            <div><dt>Year</dt><dd>2024</dd></div>
-          </dl>
-        </div>
-      </article>
-
-      <article class="exhibit" data-reveal data-tilt data-seed="4">
-        <canvas class="exhibit__canvas"></canvas>
-        <div class="exhibit__plate">
-          <h3>Glass &amp; Grain</h3>
-          <dl>
-            <div><dt>Client</dt><dd>Ceramics Studio</dd></div>
-            <div><dt>Medium</dt><dd>Portfolio</dd></div>
-            <div><dt>Year</dt><dd>2024</dd></div>
-          </dl>
-        </div>
-      </article>
-
-      <article class="exhibit" data-reveal data-tilt data-seed="5">
-        <canvas class="exhibit__canvas"></canvas>
-        <div class="exhibit__plate">
-          <h3>Meridian</h3>
-          <dl>
-            <div><dt>Client</dt><dd>Fintech Rebrand</dd></div>
-            <div><dt>Medium</dt><dd>Product Site</dd></div>
-            <div><dt>Year</dt><dd>2023</dd></div>
-          </dl>
-        </div>
-      </article>
-
-      <article class="exhibit" data-reveal data-tilt data-seed="6">
-        <canvas class="exhibit__canvas"></canvas>
-        <div class="exhibit__plate">
-          <h3>Low Orbit</h3>
-          <dl>
-            <div><dt>Client</dt><dd>Experimental Short</dd></div>
-            <div><dt>Medium</dt><dd>Interactive Film</dd></div>
-            <div><dt>Year</dt><dd>2023</dd></div>
-          </dl>
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <!-- V. VOICES -->
-  <section class="voices" id="voices">
-    <div class="room-label" data-reveal><span>V</span>Voices</div>
-
-    <div class="voice-carousel" data-reveal>
-      <div class="voice-track" id="voiceTrack">
-        <blockquote class="voice is-active">
-          <p>“They didn't ask what we wanted. They asked what we wanted people to <em>feel</em> — then built that.”</p>
-          <cite>Creative Director, Nocturne</cite>
-        </blockquote>
-        <blockquote class="voice">
-          <p>“The site doesn't feel like a website. It feels like the first room of something bigger.”</p>
-          <cite>Founder, Numéro</cite>
-        </blockquote>
-        <blockquote class="voice">
-          <p>“Every page has a pace to it. Nobody bounces around here — they move the way we intended.”</p>
-          <cite>Head of Brand, Atlas Type</cite>
-        </blockquote>
-        <blockquote class="voice">
-          <p>“Quiet, precise, a little strange in exactly the right places. That's the studio, and now it's us too.”</p>
-          <cite>Partner, Meridian</cite>
-        </blockquote>
-      </div>
-
-      <div class="voice-dots" id="voiceDots"></div>
-    </div>
-
-    <div class="satisfaction" data-reveal>
-      <div class="satisfaction__stat"><strong>98%</strong><span>return for a second project</span></div>
-      <div class="satisfaction__stat"><strong>4.9</strong><span>average studio rating</span></div>
-      <div class="satisfaction__stat"><strong>0</strong><span>template starting points, ever</span></div>
-    </div>
-  </section>
-
-  <!-- VI. PROCESS -->
-  <section class="process" id="process">
-    <div class="room-label" data-reveal><span>VI</span>Process</div>
-
-    <ol class="process-line">
-      <li data-reveal>
-        <span class="process-line__num">01</span>
-        <h4>Discover</h4>
-        <p>We sit inside the problem before we touch a single pixel — audience, tone, constraints.</p>
-      </li>
-      <li data-reveal>
-        <span class="process-line__num">02</span>
-        <h4>Design</h4>
-        <p>Composition, type and colour explored as a system, not a single homepage mock.</p>
-      </li>
-      <li data-reveal>
-        <span class="process-line__num">03</span>
-        <h4>Develop</h4>
-        <p>Hand-coded, framework-free where it counts, and fast on the devices people actually use.</p>
-      </li>
-      <li data-reveal>
-        <span class="process-line__num">04</span>
-        <h4>Deliver</h4>
-        <p>Launch, then a quiet week of watching, listening and sanding down the rough edges.</p>
-      </li>
-    </ol>
-  </section>
-
-  <!-- VII. BEGIN -->
-  <section class="begin" id="begin">
-    <div class="room-label" data-reveal><span>VII</span>Begin</div>
-
-    <div class="begin__grid">
-      <div class="begin__intro" data-reveal>
-        <h2>Have a project<br>worth staging?</h2>
-        <p>Tell us what it is. We reply within two working days, always in a full paragraph — never a template.</p>
-        <a href="mailto:hello@perihelion.studio" class="begin__email">hello@perihelion.studio</a>
-      </div>
-
-      <form class="begin__form" id="begin-form" data-reveal>
-        <div class="field">
-          <label for="name">Name</label>
-          <input type="text" id="name" name="name" required>
-        </div>
-        <div class="field">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" required>
-        </div>
-        <div class="field">
-          <label for="type">Project type</label>
-          <select id="type" name="type">
-            <option>Website</option>
-            <option>Brand identity</option>
-            <option>Digital installation</option>
-            <option>Something stranger</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="message">Message</label>
-          <textarea id="message" name="message" rows="3" required></textarea>
-        </div>
-        <button type="submit" class="btn btn--fill btn--wide">
-          <span class="btn__label">Send it in</span>
-        </button>
-        <p class="begin__status" id="formStatus" role="status"></p>
-      </form>
-    </div>
-  </section>
-
-</main>
-
-<footer class="footer">
-  <div class="footer__top">
-    <span class="footer__mark">PERIHELION<span class="nav__ring">°</span></span>
-    <button class="footer__top-btn" id="toTop" aria-label="Back to top">↑</button>
-  </div>
-  <div class="footer__row">
-    <div class="footer__links">
-      <a href="#studio">Studio</a>
-      <a href="#disciplines">Disciplines</a>
-      <a href="#exhibits">Exhibits</a>
-      <a href="#voices">Voices</a>
-      <a href="#begin">Begin</a>
-    </div>
-    <div class="footer__socials">
-      <a href="#">Instagram</a>
-      <a href="#">Are.na</a>
-      <a href="#">LinkedIn</a>
-    </div>
-  </div>
-  <p class="footer__legal">© <span id="year"></span> Perihelion Studio. Built in-house, one careful pixel at a time.</p>
-</footer>
-
-<script src="script.js"></script>
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+</script>
 </body>
 </html>
