@@ -8,12 +8,17 @@ jobs:
       matrix:
         node: ["18", "20"]
     steps:
-      - name: Matrix
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node setup
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
           cache: "npm"
-      - run: npm install
-      - run: npm ci
-      - run: npm test
+
+      - name: Install Dependencies
+        run: npm ci
+      - name: Npm Test
+        run: npm test
 
