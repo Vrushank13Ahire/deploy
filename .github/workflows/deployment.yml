@@ -1,20 +1,17 @@
 name: CI
 on: push
+
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: ["18", "20"]
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
-      - run: echo "Build started"
+          node-version: 20
 
-
-  showdir:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - run: pwd
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: dist/
